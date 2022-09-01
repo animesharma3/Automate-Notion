@@ -1,10 +1,12 @@
 # Notion Application
-import json, requests
+import json
+import requests
+import pandas as pd
 
+file = open('secrets.json')  # Opens the files
+problems = pd.read_excel("blind75.xlsx")  # Reads the excel file
 
-file = open('secrets.json') # Opens the file
-
-data = json.load(file) # loads the data then stores in variable called data
+data = json.load(file)  # loads the data then stores in variable called data
 
 # Secret here:
 secret = data['id']
@@ -12,7 +14,7 @@ secret = data['id']
 # Database information here:
 database = data['database_tasks']
 
-file.close() # close file
+file.close()  # close file
 
 url = 'https://api.notion.com/v1/pages'
 
@@ -23,23 +25,32 @@ headers = {
     'Notion-Version': '2021-08-16'
 }
 
-# Data input
-data_input = {
-    "parent": { "database_id": f"{database}" },
-    "properties": {
-      "Name": {
-        "title": [
-          {
-            "text": {
-              "content": "Yurts in Big Sur, California"
-            }     
-          }
-        ]
-      }
+for i in range(len(problems)):
+    data_input = {
+        "parent": {"database_id": f"{database}"},
+        "properties": {
+            "Title": {
+                "title": [
+                    {
+                        "text": {
+                            "content": problems.iloc[i]['Name']
+                        }
+                    }
+                ]
+            },
+            "Category": {
+                "select": {
+                    "name": problems.iloc[i]['Category']
+                }
+            },
+            "Link": {
+                "url": problems.iloc[i]['Link']
+            },
+            "Status": {
+                "status": {
+                    "name": "To do"
+                }
+            }
+        }
     }
-  }
-
-  
-# check request 
-response = requests.post(url, headers=headers, json=data_input)
-print(response.json())
+    requests.post(url, headers=headers, json=data_input)
